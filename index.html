@@ -496,7 +496,7 @@
         
         /* Demo Video Styles */
         .demo-video {
-            max-width: 600px;
+            max-width: 400px;
             width: 100%;
             height: auto;
             border-radius: 20px;
@@ -504,7 +504,8 @@
             border: 1px solid var(--border-subtle);
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(10px);
-            object-fit: cover;
+            object-fit: contain;
+            aspect-ratio: 388 / 456;
         }
         
         .demo-video:hover {
@@ -728,11 +729,11 @@
                         muted 
                         loop 
                         playsinline 
-                        poster="demo-poster.jpg"
+                        poster="demo-poster-correct.jpg"
                         preload="metadata"
                         loading="lazy">
-                        <source src="demo-compressed.mp4" type="video/mp4">
-                        <p>Your browser doesn't support HTML5 video. <a href="demo-compressed.mp4">Download the demo video</a>.</p>
+                        <source src="demo-compressed-correct.mp4" type="video/mp4">
+                        <p>Your browser doesn't support HTML5 video. <a href="demo-compressed-correct.mp4">Download the demo video</a>.</p>
                     </video>
                 </div>
             </div>
