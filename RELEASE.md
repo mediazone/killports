@@ -1,13 +1,13 @@
-# KillPorts v1.0.1 Release
+# KillPorts v1.0.2 Release
 
 ## Version
-v1.0.1
+v1.0.2
 
 ## Release Date  
 2025-08-11
 
 ## Package Information
-- **File:** KillPorts-v1.0.1.pkg
+- **File:** KillPorts-v1.0.2.pkg
 - **Platform:** macOS 13.0+
 - **Architecture:** Universal Binary (Apple Silicon + Intel)
 - **Size:** 20K
