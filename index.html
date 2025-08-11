@@ -725,14 +725,12 @@
                 <div class="app-preview">
                     <video 
                         class="demo-video"
-                        autoplay="true"
-                        muted="true"
-                        loop="true"
-                        playsinline="true"
-                        poster="demo-poster-correct.jpg"
-                        preload="auto"
-                        webkit-playsinline="true"
-                        x-webkit-airplay="allow">
+                        autoplay 
+                        muted 
+                        loop 
+                        playsinline
+                        controls
+                        poster="demo-poster-correct.jpg">
                         <source src="demo-compressed-correct.mp4" type="video/mp4">
                         <p>Your browser doesn't support HTML5 video. <a href="demo-compressed-correct.mp4">Download the demo video</a>.</p>
                     </video>
@@ -808,72 +806,15 @@
     </footer>
 
     <script>
-        // Enhanced video autoplay with multiple fallbacks
-        function initVideoAutoplay() {
+        // Simple video autoplay
+        document.addEventListener('DOMContentLoaded', function() {
             const video = document.querySelector('.demo-video');
-            if (!video) return;
-
-            // Force video properties
-            video.muted = true;
-            video.loop = true;
-            video.playsInline = true;
-
-            // Attempt 1: Direct play after a short delay
-            setTimeout(() => {
-                video.play().then(() => {
-                    console.log('✅ Video autoplay successful');
-                }).catch(error => {
-                    console.log('❌ Direct autoplay failed:', error.message);
-                    attemptUserInteractionPlay(video);
+            if (video) {
+                video.play().catch(e => {
+                    console.log('Autoplay prevented by browser - user can click play button');
                 });
-            }, 100);
-
-            // Attempt 2: Play on user interaction
-            function attemptUserInteractionPlay(video) {
-                const playOnInteraction = () => {
-                    video.play().then(() => {
-                        console.log('✅ Video started on user interaction');
-                        // Remove listeners after successful play
-                        document.removeEventListener('click', playOnInteraction);
-                        document.removeEventListener('scroll', playOnInteraction);
-                        document.removeEventListener('keydown', playOnInteraction);
-                    }).catch(e => console.log('❌ User interaction play failed:', e.message));
-                };
-                
-                document.addEventListener('click', playOnInteraction, { once: true });
-                document.addEventListener('scroll', playOnInteraction, { once: true });
-                document.addEventListener('keydown', playOnInteraction, { once: true });
             }
-
-            // Attempt 3: Play when video is in viewport
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && video.paused) {
-                        video.play().catch(e => console.log('❌ Viewport play failed:', e.message));
-                    }
-                });
-            }, { threshold: 0.5 });
-            observer.observe(video);
-
-            // Attempt 4: Ensure video is ready
-            video.addEventListener('loadeddata', () => {
-                if (video.paused) {
-                    video.play().catch(e => console.log('❌ LoadedData play failed:', e.message));
-                }
-            });
-
-            // Monitor video state
-            video.addEventListener('play', () => console.log('🎬 Video started playing'));
-            video.addEventListener('pause', () => console.log('⏸️ Video paused'));
-            video.addEventListener('error', (e) => console.log('❌ Video error:', e));
-        }
-
-        // Initialize when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initVideoAutoplay);
-        } else {
-            initVideoAutoplay();
-        }
+        });
 
         // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
