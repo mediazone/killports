@@ -725,13 +725,14 @@
                 <div class="app-preview">
                     <video 
                         class="demo-video"
-                        autoplay 
-                        muted 
-                        loop 
-                        playsinline 
+                        autoplay="true"
+                        muted="true"
+                        loop="true"
+                        playsinline="true"
                         poster="demo-poster-correct.jpg"
                         preload="auto"
-                        controls="false">
+                        webkit-playsinline="true"
+                        x-webkit-airplay="allow">
                         <source src="demo-compressed-correct.mp4" type="video/mp4">
                         <p>Your browser doesn't support HTML5 video. <a href="demo-compressed-correct.mp4">Download the demo video</a>.</p>
                     </video>
@@ -807,35 +808,72 @@
     </footer>
 
     <script>
-        // Ensure video autoplay works reliably
-        document.addEventListener('DOMContentLoaded', function() {
+        // Enhanced video autoplay with multiple fallbacks
+        function initVideoAutoplay() {
             const video = document.querySelector('.demo-video');
-            if (video) {
-                // Try to play the video
-                const playPromise = video.play();
-                
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        // Autoplay started successfully
-                        console.log('Video autoplay started');
-                    }).catch(error => {
-                        // Autoplay was prevented - show poster instead
-                        console.log('Autoplay prevented, showing poster');
-                        video.load(); // This will show the poster
-                    });
-                }
-                
-                // Fallback: try to play when video comes into view
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            video.play().catch(e => console.log('Video play failed:', e));
-                        }
-                    });
+            if (!video) return;
+
+            // Force video properties
+            video.muted = true;
+            video.loop = true;
+            video.playsInline = true;
+
+            // Attempt 1: Direct play after a short delay
+            setTimeout(() => {
+                video.play().then(() => {
+                    console.log('✅ Video autoplay successful');
+                }).catch(error => {
+                    console.log('❌ Direct autoplay failed:', error.message);
+                    attemptUserInteractionPlay(video);
                 });
-                observer.observe(video);
+            }, 100);
+
+            // Attempt 2: Play on user interaction
+            function attemptUserInteractionPlay(video) {
+                const playOnInteraction = () => {
+                    video.play().then(() => {
+                        console.log('✅ Video started on user interaction');
+                        // Remove listeners after successful play
+                        document.removeEventListener('click', playOnInteraction);
+                        document.removeEventListener('scroll', playOnInteraction);
+                        document.removeEventListener('keydown', playOnInteraction);
+                    }).catch(e => console.log('❌ User interaction play failed:', e.message));
+                };
+                
+                document.addEventListener('click', playOnInteraction, { once: true });
+                document.addEventListener('scroll', playOnInteraction, { once: true });
+                document.addEventListener('keydown', playOnInteraction, { once: true });
             }
-        });
+
+            // Attempt 3: Play when video is in viewport
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && video.paused) {
+                        video.play().catch(e => console.log('❌ Viewport play failed:', e.message));
+                    }
+                });
+            }, { threshold: 0.5 });
+            observer.observe(video);
+
+            // Attempt 4: Ensure video is ready
+            video.addEventListener('loadeddata', () => {
+                if (video.paused) {
+                    video.play().catch(e => console.log('❌ LoadedData play failed:', e.message));
+                }
+            });
+
+            // Monitor video state
+            video.addEventListener('play', () => console.log('🎬 Video started playing'));
+            video.addEventListener('pause', () => console.log('⏸️ Video paused'));
+            video.addEventListener('error', (e) => console.log('❌ Video error:', e));
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initVideoAutoplay);
+        } else {
+            initVideoAutoplay();
+        }
 
         // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
