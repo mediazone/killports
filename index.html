@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KillPorts - Developer Port Management for macOS</title>
+    <meta name="description" content="A sleek macOS MenuBar utility for developers to quickly free up network ports. One-click port killing for React, Node.js, Rails, and more.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://killports.dev/">
+    <meta property="og:title" content="KillPorts - Developer Port Management for macOS">
+    <meta property="og:description" content="A sleek macOS MenuBar utility for developers to quickly free up network ports.">
+    <meta property="og:image" content="https://killports.dev/assets/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://killports.dev/">
+    <meta property="twitter:title" content="KillPorts - Developer Port Management for macOS">
+    <meta property="twitter:description" content="A sleek macOS MenuBar utility for developers to quickly free up network ports.">
+    <meta property="twitter:image" content="https://killports.dev/assets/twitter-image.png">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+    
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Modern Dark Theme Palette */
+            --primary-color: #FF4444;
+            --primary-hover: #FF6666;
+            --primary-glow: rgba(255, 68, 68, 0.3);
+            
+            --background-primary: #0A0A0A;
+            --background-secondary: #111111;
+            --background-tertiary: #1A1A1A;
+            --background-glass: rgba(17, 17, 17, 0.8);
+            
+            --text-primary: #FFFFFF;
+            --text-secondary: #A1A1A1;
+            --text-tertiary: #666666;
+            --text-accent: #FF4444;
+            
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-medium: rgba(255, 255, 255, 0.12);
+            --border-strong: rgba(255, 255, 255, 0.16);
+            
+            --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.25);
+            --shadow-medium: 0 8px 40px rgba(0, 0, 0, 0.35);
+            --shadow-strong: 0 16px 64px rgba(0, 0, 0, 0.45);
+            
+            --gradient-hero: linear-gradient(135deg, #FF4444 0%, #CC0000 50%, #AA0000 100%);
+            --gradient-card: linear-gradient(145deg, rgba(26, 26, 26, 0.8) 0%, rgba(17, 17, 17, 0.9) 100%);
+            --gradient-bg: radial-gradient(circle at 20% 20%, rgba(255, 68, 68, 0.08) 0%, transparent 50%),
+                          radial-gradient(circle at 80% 80%, rgba(255, 68, 68, 0.04) 0%, transparent 50%);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--background-primary);
+            background-image: var(--gradient-bg);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+            min-height: 100vh;
+            font-weight: 400;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Selection styles */
+        ::selection {
+            background: var(--primary-glow);
+            color: var(--text-primary);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        
+        
+        .cta-button {
+            background: var(--gradient-hero);
+            color: var(--text-primary);
+            padding: 12px 28px;
+            border-radius: 14px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-medium);
+            filter: brightness(1.1);
+        }
+        
+        .cta-button:hover::before {
+            left: 100%;
+        }
+        
+        .cta-button:active {
+            transform: translateY(-1px);
+            transition: transform 0.1s ease;
+        }
+        
+        /* Main Content */
+        main {
+            margin-top: 0;
+        }
+        
+        .hero {
+            padding: 140px 0 120px;
+            text-align: center;
+            background: var(--background-primary);
+            position: relative;
+            overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255, 68, 68, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 68, 68, 0.05) 0%, transparent 50%),
+                linear-gradient(180deg, transparent 0%, var(--background-primary) 100%);
+            z-index: 1;
+            animation: heroGlow 8s ease-in-out infinite alternate;
+        }
+        
+        @keyframes heroGlow {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.6; }
+        }
+        
+        .hero .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero h1 {
+            font-size: clamp(48px, 8vw, 88px);
+            font-weight: 800;
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 32px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 50%, var(--primary-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            0% { filter: brightness(1); }
+            100% { filter: brightness(1.1) drop-shadow(0 0 40px var(--primary-glow)); }
+        }
+        
+        /* Fireworks Animation */
+        .fireworks-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 5;
+        }
+        
+        .firework {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            opacity: 0;
+            animation: fireworkAnimation 2s ease-out infinite;
+        }
+        
+        @keyframes fireworkAnimation {
+            0% {
+                opacity: 1;
+                transform: scale(0) translateY(0);
+                box-shadow: 
+                    0 0 10px var(--primary-color),
+                    0 0 20px var(--primary-color),
+                    0 0 30px var(--primary-color);
+            }
+            20% {
+                opacity: 1;
+                transform: scale(1) translateY(-100px);
+            }
+            40% {
+                opacity: 1;
+                transform: scale(1.5) translateY(-200px);
+                background: #FF6666;
+            }
+            60% {
+                opacity: 0.8;
+                transform: scale(2) translateY(-250px);
+                background: #FF8888;
+                box-shadow: 
+                    0 0 20px #FF4444,
+                    0 0 40px #FF4444,
+                    0 0 60px #FF4444;
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.5) translateY(-300px);
+                background: transparent;
+            }
+        }
+        
+        /* Particles for "killed ports" effect */
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            opacity: 0;
+            animation: particleAnimation 3s ease-out infinite;
+        }
+        
+        @keyframes particleAnimation {
+            0% {
+                opacity: 1;
+                transform: scale(0) rotate(0deg);
+                box-shadow: 0 0 5px var(--primary-color);
+            }
+            30% {
+                opacity: 0.8;
+                transform: scale(1) rotate(180deg) translateX(50px);
+            }
+            60% {
+                opacity: 0.5;
+                transform: scale(1.2) rotate(360deg) translateX(100px);
+                background: #FFAAAA;
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.3) rotate(540deg) translateX(150px);
+                background: transparent;
+            }
+        }
+        
+        /* Port Kill Effect - Red flashes */
+        .port-kill {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary-color) 0%, transparent 70%);
+            opacity: 0;
+            animation: portKillAnimation 1.5s ease-out infinite;
+        }
+        
+        @keyframes portKillAnimation {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(0deg);
+            }
+            30% {
+                opacity: 0.8;
+                transform: scale(1) rotate(90deg);
+                box-shadow: 
+                    0 0 30px var(--primary-color),
+                    0 0 60px var(--primary-color),
+                    inset 0 0 30px rgba(255, 255, 255, 0.2);
+            }
+            70% {
+                opacity: 0.4;
+                transform: scale(1.5) rotate(180deg);
+                box-shadow: 
+                    0 0 50px var(--primary-color),
+                    0 0 100px var(--primary-color);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(2) rotate(270deg);
+                box-shadow: none;
+            }
+        }
+        
+        /* Stagger animation delays */
+        .firework:nth-child(1) { animation-delay: 0s; left: 15%; top: 60%; }
+        .firework:nth-child(2) { animation-delay: 0.8s; left: 35%; top: 70%; }
+        .firework:nth-child(3) { animation-delay: 1.6s; left: 65%; top: 65%; }
+        .firework:nth-child(4) { animation-delay: 2.4s; left: 85%; top: 75%; }
+        
+        .particle:nth-child(5) { animation-delay: 0.3s; left: 20%; top: 50%; }
+        .particle:nth-child(6) { animation-delay: 0.9s; left: 40%; top: 45%; }
+        .particle:nth-child(7) { animation-delay: 1.5s; left: 60%; top: 55%; }
+        .particle:nth-child(8) { animation-delay: 2.1s; left: 80%; top: 50%; }
+        .particle:nth-child(9) { animation-delay: 2.7s; left: 25%; top: 40%; }
+        .particle:nth-child(10) { animation-delay: 3.3s; left: 75%; top: 60%; }
+        
+        .port-kill:nth-child(11) { animation-delay: 1s; left: 30%; top: 35%; }
+        .port-kill:nth-child(12) { animation-delay: 2s; left: 70%; top: 40%; }
+        .port-kill:nth-child(13) { animation-delay: 3s; left: 50%; top: 30%; }
+        
+        .hero p {
+            font-size: clamp(18px, 3vw, 24px);
+            color: var(--text-secondary);
+            margin-bottom: 56px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 80px;
+            z-index: 10;
+            position: relative;
+        }
+        
+        .secondary-button {
+            border: 1px solid var(--border-medium);
+            color: var(--text-primary);
+            padding: 16px 32px;
+            border-radius: 16px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            background: var(--background-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .secondary-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .secondary-button:hover {
+            border-color: var(--border-strong);
+            color: var(--text-primary);
+            background: var(--background-tertiary);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-medium);
+            filter: brightness(1.1);
+        }
+        
+        .secondary-button:hover::before {
+            opacity: 1;
+        }
+        
+        .primary-button {
+            background: var(--gradient-hero);
+            color: var(--text-primary);
+            padding: 16px 40px;
+            border-radius: 16px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .primary-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .primary-button:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-medium);
+            filter: brightness(1.15) saturate(1.1);
+        }
+        
+        .primary-button:hover::before {
+            left: 100%;
+        }
+        
+        .app-preview {
+            margin-top: 60px;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            z-index: 10;
+            position: relative;
+        }
+        
+        .preview-image {
+            max-width: 380px;
+            width: 100%;
+            height: auto;
+            border-radius: 24px;
+            box-shadow: var(--shadow-strong);
+            border: 1px solid var(--border-subtle);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .preview-image:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 32px 80px rgba(255, 68, 68, 0.15);
+            border-color: var(--border-medium);
+        }
+        
+        
+        
+        /* Download Section */
+        .download {
+            padding: 100px 0;
+            background: linear-gradient(135deg, var(--background-dark), var(--background-color));
+            position: relative;
+            color: white;
+            text-align: center;
+            overflow: hidden;
+        }
+        
+        .download::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(255, 0, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            z-index: 1;
+        }
+        
+        .download .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .download h2 {
+            font-size: 40px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .download p {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .download-button {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 16px 32px;
+            border-radius: 16px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(255, 0, 0, 0.4);
+        }
+        
+        .download-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 0, 0, 0.6);
+            opacity: 0.95;
+        }
+        
+        .system-requirements {
+            margin-top: 40px;
+            opacity: 0.8;
+            font-size: 14px;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--background-dark);
+            color: var(--text-secondary);
+            padding: 60px 0 40px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+        
+        .footer-section h4 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-section a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-section a:hover {
+            color: white;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 40px;
+            padding-top: 20px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Scroll animations */
+        .scroll-animate {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        
+        .scroll-animate.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 36px;
+            }
+            
+            .hero p {
+                font-size: 18px;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            nav ul {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main>
+        <section class="hero">
+            <div class="fireworks-container">
+                <div class="firework"></div>
+                <div class="firework"></div>
+                <div class="firework"></div>
+                <div class="firework"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="port-kill"></div>
+                <div class="port-kill"></div>
+                <div class="port-kill"></div>
+            </div>
+            <div class="container">
+                <h1>Port Management<br>Made Simple</h1>
+                <p>A sleek macOS MenuBar utility for developers to quickly free up network ports. One-click solutions for React, Node.js, Rails, and more.</p>
+                
+                <div class="hero-buttons">
+                    <a href="#download" class="primary-button">
+                        ⚡ Download v1.0.1
+                    </a>
+                    <a href="https://github.com/mediazone/killports" class="secondary-button">
+                        <span>📂</span> View Source
+                    </a>
+                </div>
+                
+                <div class="app-preview">
+                    <img src="killports-menu.png" alt="KillPorts MenuBar Interface" class="preview-image" />
+                    <img src="killports-dialog.png" alt="KillPorts Termination Dialog" class="preview-image" style="margin-top: 20px;" />
+                </div>
+            </div>
+        </section>
+
+
+        <section id="download" class="download">
+            <div class="container">
+                <h2>Ready to Kill Some Ports?</h2>
+                <p>Download KillPorts now and never struggle with stuck development servers again. Completely free for personal use.</p>
+                
+                <a href="https://github.com/mediazone/killports/releases/latest/download/KillPorts-v1.0.1.pkg" class="download-button">
+                    Download KillPorts v1.0.1
+                </a>
+                
+                <div class="system-requirements">
+                    <p>macOS 13.0+ • Apple Silicon & Intel • 2.1 MB Download</p>
+                    <p>Notarized by Apple • Code Signed • Malware Scanned</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#download">Download</a></li>
+                        <li><a href="https://github.com/mediazone/killports/releases">Releases</a></li>
+                        <li><a href="https://github.com/mediazone/killports/blob/main/CHANGELOG.md">Changelog</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="https://github.com/mediazone/killports/wiki">Documentation</a></li>
+                        <li><a href="https://github.com/mediazone/killports/issues">Bug Reports</a></li>
+                        <li><a href="https://github.com/mediazone/killports/discussions">Community</a></li>
+                        <li><a href="mailto:hello@killports.dev">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Developer</h4>
+                    <ul>
+                        <li><a href="https://github.com/mediazone">GitHub</a></li>
+                        <li><a href="https://www.npmjs.com/settings/mediazone">NPM</a></li>
+                        <li><a href="https://mediazone.nl">Mediazone</a></li>
+                        <li><a href="https://twitter.com/ronkoldeweid">Twitter</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="terms.html">Terms of Use</a></li>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                        <li><a href="license.html">License</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 KillPorts by Ron Koldeweid. Made for developers.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all scroll-animate elements
+        document.addEventListener('DOMContentLoaded', () => {
+            const animateElements = document.querySelectorAll('.scroll-animate');
+            animateElements.forEach(el => observer.observe(el));
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+name: 🚀 Auto Release on Push
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '*.pkg'
+      - 'RELEASE.md'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-release:
+    name: 📦 Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+
+    - name: 🏷️ Set Version
+      id: version
+      run: |
+        # Extract version from RELEASE.md if it exists
+        if [ -f RELEASE.md ]; then
+          VERSION=$(grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' RELEASE.md | head -1 | sed 's/v//')
+        fi
+        
+        # Fallback to default version if not found
+        if [ -z "$VERSION" ]; then
+          VERSION="1.0.0"
+        fi
+        
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version detected: $VERSION"
+
+    - name: 🔍 Find PKG File
+      id: pkg
+      run: |
+        PKG_FILE=$(find . -name "*.pkg" -type f | head -1)
+        if [ -f "$PKG_FILE" ]; then
+          PKG_NAME=$(basename "$PKG_FILE")
+          echo "pkg_file=$PKG_NAME" >> $GITHUB_OUTPUT
+          echo "pkg_path=$PKG_FILE" >> $GITHUB_OUTPUT
+          echo "Found PKG: $PKG_NAME"
+          
+          # Get file size
+          SIZE=$(du -h "$PKG_FILE" | cut -f1)
+          echo "pkg_size=$SIZE" >> $GITHUB_OUTPUT
+          echo "Size: $SIZE"
+        else
+          echo "❌ No .pkg file found!"
+          exit 1
+        fi
+
+    - name: 📝 Update Website Version
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        
+        # Update version in index.html
+        sed -i "s/Download v[0-9]\+\.[0-9]\+\.[0-9]\+/Download v$VERSION/g" index.html || echo "No version in index.html"
+        sed -i "s/KillPorts v[0-9]\+\.[0-9]\+\.[0-9]\+/KillPorts v$VERSION/g" index.html || echo "No KillPorts version in index.html"
+        sed -i "s/KillPorts-v[0-9]\+\.[0-9]\+\.[0-9]\+\.pkg/KillPorts-v$VERSION.pkg/g" index.html || echo "No pkg link in index.html"
+        
+        # Update README.md
+        sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$VERSION/g" README.md || echo "No version in README.md"
+        sed -i "s/KillPorts-v[0-9]\+\.[0-9]\+\.[0-9]\+\.pkg/KillPorts-v$VERSION.pkg/g" README.md || echo "No pkg link in README.md"
+        
+        echo "✅ Updated website to version $VERSION"
+
+    - name: 📝 Update CHANGELOG
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        
+        # Create updated changelog
+        cat > temp_changelog.md << EOF
+        # Changelog
+        
+        All notable changes to KillPorts will be documented in this file.
+        
+        ## [$VERSION] - $(date +%Y-%m-%d)
+        
+        ### Added
+        - Automated release with notarized installer
+        - Robot MenuBar icon
+        - Fast port termination functionality
+        - Apple notarized and code signed package
+        
+        EOF
+        
+        # Append existing changelog if it exists
+        if [ -f CHANGELOG.md ]; then
+          # Skip first few lines of existing changelog
+          tail -n +5 CHANGELOG.md >> temp_changelog.md 2>/dev/null || echo ""
+        fi
+        
+        mv temp_changelog.md CHANGELOG.md
+        echo "✅ Updated CHANGELOG.md"
+
+    - name: 📝 Commit Website Updates
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "KillPorts Release Bot"
+        git add index.html README.md CHANGELOG.md
+        
+        if ! git diff --staged --quiet; then
+          git commit -m "🔄 Auto-update website to v${{ steps.version.outputs.version }}
+          
+          ✨ Automated updates:
+          - Updated download links to v${{ steps.version.outputs.version }}
+          - Refreshed version numbers across website
+          - Updated changelog with new release info
+          
+          📦 Package: ${{ steps.pkg.outputs.pkg_file }} (${{ steps.pkg.outputs.pkg_size }})"
+          git push
+        else
+          echo "No website changes to commit"
+        fi
+
+    - name: 🏗️ Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.version.outputs.version }}
+        name: 🔥 KillPorts v${{ steps.version.outputs.version }}
+        body: |
+          ## ✨ What's New in v${{ steps.version.outputs.version }}
+          
+          🤖 **Robot MenuBar Icon** - Look for the friendly robot in your MenuBar!
+          ⚡ **Fast Port Termination** - One-click port management for developers
+          🛡️ **Apple Notarized & Code Signed** - Safe and secure installation
+          🎯 **Developer-Focused** - Pre-configured for React, Node.js, Rails, and more
+          
+          ## 📥 Download & Install
+          
+          1. **Download** the installer below
+          2. **Double-click** to install
+          3. **Grant permissions** when prompted  
+          4. **Launch** from Applications or Spotlight
+          5. **Look for the robot icon** in your MenuBar!
+          
+          ## 🔧 Technical Details
+          
+          - **Platform:** macOS 13.0+ (Ventura and later)
+          - **Architecture:** Universal Binary (Apple Silicon + Intel)  
+          - **Size:** ${{ steps.pkg.outputs.pkg_size }}
+          - **Language:** Swift + SwiftUI
+          - **Notarization:** ✅ Apple approved
+          
+          ## 🚀 Quick Start
+          
+          Click the robot icon in your MenuBar → Select port category → Confirm termination
+          
+          ---
+          
+          **Made with ❤️ for developers**
+          
+          🌐 [Website](https://mediazone.github.io/killports/) • 🐛 [Issues](https://github.com/mediazone/killports/issues) • 💬 [Discussions](https://github.com/mediazone/killports/discussions)
+        files: |
+          ${{ steps.pkg.outputs.pkg_file }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 🎉 Release Complete
+      run: |
+        echo "🎉 Successfully created KillPorts v${{ steps.version.outputs.version }}!"
+        echo "🌐 Website: https://mediazone.github.io/killports/"
+        echo "📦 Download: https://github.com/mediazone/killports/releases/tag/v${{ steps.version.outputs.version }}"
+        echo "🤖 Users can now download the notarized installer!"
