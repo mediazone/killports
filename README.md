@@ -20,9 +20,9 @@
 
 ## 📥 Download
 
-### Latest Release (v1.0.1)
+### Latest Release (v1.0.2)
 
-**[⬇️ Download KillPorts-v1.0.1.pkg](https://github.com/mediazone/killports/releases/download/v1.0.1/KillPorts-v1.0.1.pkg)** (macOS 13.0+)
+**[⬇️ Download KillPorts-v1.0.2.pkg](https://github.com/mediazone/killports/releases/download/v1.0.2/KillPorts-v1.0.2.pkg)** (macOS 13.0+)
 
 > 🛡️ **Notarized & Code Signed** - Fully approved by Apple for security and compatibility
 
@@ -128,4 +128,4 @@ KillPorts is proprietary software developed by Ron Koldeweid bij [Mediazone](htt
 
 ---
 
-*KillPorts v1.0.1 - Built for macOS with Swift & SwiftUI*
+*KillPorts v1.0.2 - Built for macOS with Swift & SwiftUI*
