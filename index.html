@@ -494,6 +494,25 @@
             border-color: var(--border-medium);
         }
         
+        /* Demo Video Styles */
+        .demo-video {
+            max-width: 600px;
+            width: 100%;
+            height: auto;
+            border-radius: 20px;
+            box-shadow: var(--shadow-strong);
+            border: 1px solid var(--border-subtle);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            object-fit: cover;
+        }
+        
+        .demo-video:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 32px 80px rgba(255, 68, 68, 0.2);
+            border-color: var(--border-medium);
+        }
+        
         
         
         /* Download Section */
@@ -703,8 +722,18 @@
                 </div>
                 
                 <div class="app-preview">
-                    <img src="killports-menu.png" alt="KillPorts MenuBar Interface" class="preview-image" />
-                    <img src="killports-dialog.png" alt="KillPorts Termination Dialog" class="preview-image" style="margin-top: 20px;" />
+                    <video 
+                        class="demo-video"
+                        autoplay 
+                        muted 
+                        loop 
+                        playsinline 
+                        poster="demo-poster.jpg"
+                        preload="metadata"
+                        loading="lazy">
+                        <source src="demo-compressed.mp4" type="video/mp4">
+                        <p>Your browser doesn't support HTML5 video. <a href="demo-compressed.mp4">Download the demo video</a>.</p>
+                    </video>
                 </div>
             </div>
         </section>
