@@ -22,7 +22,7 @@
 
 ### Latest Release (v1.0.1)
 
-**[⬇️ Download KillPorts-v1.0.1.pkg](https://github.com/mediazone/killports/releases/latest/download/KillPorts-v1.0.1.pkg)** (macOS 13.0+)
+**[⬇️ Download KillPorts-v1.0.1.pkg](https://github.com/mediazone/killports/releases/download/v1.0.1/KillPorts-v1.0.1.pkg)** (macOS 13.0+)
 
 > 🛡️ **Notarized & Code Signed** - Fully approved by Apple for security and compatibility
 

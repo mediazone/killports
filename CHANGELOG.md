@@ -18,6 +18,14 @@ All notable changes to KillPorts will be documented in this file.
 - Fast port termination functionality
 - Apple notarized and code signed package
 
+## [1.0.1] - 2025-08-11
+
+### Added
+- Automated release with notarized installer
+- Robot MenuBar icon
+- Fast port termination functionality
+- Apple notarized and code signed package
+
 ## [1.0.0] - $(date +%Y-%m-%d)
 
 ### Changed
