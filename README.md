@@ -94,7 +94,7 @@ Having issues? We're here to help:
 
 ## 📄 License
 
-KillPorts is proprietary software developed by [Ron Koldeweid](https://github.com/ronkoldeweid).
+KillPorts is proprietary software developed by Ron Koldeweid bij [Mediazone](https://killports.com).
 
 **Terms of Use:**
 - ✅ **Free for personal use** - Individual developers and personal projects
