@@ -730,8 +730,8 @@
                         loop 
                         playsinline 
                         poster="demo-poster-correct.jpg"
-                        preload="metadata"
-                        loading="lazy">
+                        preload="auto"
+                        controls="false">
                         <source src="demo-compressed-correct.mp4" type="video/mp4">
                         <p>Your browser doesn't support HTML5 video. <a href="demo-compressed-correct.mp4">Download the demo video</a>.</p>
                     </video>
@@ -807,6 +807,36 @@
     </footer>
 
     <script>
+        // Ensure video autoplay works reliably
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.querySelector('.demo-video');
+            if (video) {
+                // Try to play the video
+                const playPromise = video.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        // Autoplay started successfully
+                        console.log('Video autoplay started');
+                    }).catch(error => {
+                        // Autoplay was prevented - show poster instead
+                        console.log('Autoplay prevented, showing poster');
+                        video.load(); // This will show the poster
+                    });
+                }
+                
+                // Fallback: try to play when video comes into view
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            video.play().catch(e => console.log('Video play failed:', e));
+                        }
+                    });
+                });
+                observer.observe(video);
+            }
+        });
+
         // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
