@@ -723,17 +723,11 @@
                 </div>
                 
                 <div class="app-preview">
-                    <video 
+                    <img 
+                        src="demo.gif" 
+                        alt="KillPorts Demo - MenuBar Port Management" 
                         class="demo-video"
-                        autoplay 
-                        muted 
-                        loop 
-                        playsinline
-                        controls
-                        poster="demo-poster-clean.jpg">
-                        <source src="demo-clean.mp4" type="video/mp4">
-                        <p>Your browser doesn't support HTML5 video. <a href="demo-clean.mp4">Download the demo video</a>.</p>
-                    </video>
+                        loading="lazy">
                 </div>
             </div>
         </section>
@@ -806,15 +800,7 @@
     </footer>
 
     <script>
-        // Simple video autoplay
-        document.addEventListener('DOMContentLoaded', function() {
-            const video = document.querySelector('.demo-video');
-            if (video) {
-                video.play().catch(e => {
-                    console.log('Autoplay prevented by browser - user can click play button');
-                });
-            }
-        });
+        // Demo GIF loads automatically - no JavaScript needed!
 
         // Smooth scrolling for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
