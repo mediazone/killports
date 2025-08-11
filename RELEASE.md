@@ -7,7 +7,7 @@ v1.0.1
 2025-08-11
 
 ## Package Information
-- **File:** 
+- **File:** KillPorts-v1.0.1.pkg
 - **Platform:** macOS 13.0+
 - **Architecture:** Universal Binary (Apple Silicon + Intel)
 - **Size:** 20K
