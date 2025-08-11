@@ -5,6 +5,10 @@ name: 🔄 Sync New Release from Private Repo
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
     inputs:
       version:
         description: 'New version number (e.g., 1.0.1)'
@@ -120,15 +124,15 @@ jobs:
         git push
         
     - name: 🏗️ Create GitHub Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ github.event.inputs.version }}
-        release_name: 🔥 KillPorts v${{ github.event.inputs.version }}
+        name: 🔥 KillPorts v${{ github.event.inputs.version }}
         body_path: release_notes.md
         draft: false
         prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
     - name: 🎉 Release Complete
       run: |
