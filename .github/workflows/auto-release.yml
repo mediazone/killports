@@ -62,11 +62,13 @@ jobs:
         # Update version in index.html
         sed -i "s/Download v[0-9]\+\.[0-9]\+\.[0-9]\+/Download v$VERSION/g" index.html || echo "No version in index.html"
         sed -i "s/KillPorts v[0-9]\+\.[0-9]\+\.[0-9]\+/KillPorts v$VERSION/g" index.html || echo "No KillPorts version in index.html"
-        sed -i "s/KillPorts-v[0-9]\+\.[0-9]\+\.[0-9]\+\.pkg/KillPorts-v$VERSION.pkg/g" index.html || echo "No pkg link in index.html"
+        # Update download URLs to use specific version path (works with actual GitHub releases)
+        sed -i "s|https://github.com/mediazone/killports/releases/[^\"]*\.pkg|https://github.com/mediazone/killports/releases/download/v$VERSION/KillPorts-v$VERSION.pkg|g" index.html || echo "No download URL in index.html"
         
         # Update README.md
         sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v$VERSION/g" README.md || echo "No version in README.md"
-        sed -i "s/KillPorts-v[0-9]\+\.[0-9]\+\.[0-9]\+\.pkg/KillPorts-v$VERSION.pkg/g" README.md || echo "No pkg link in README.md"
+        # Update download URLs in README to use specific version path
+        sed -i "s|https://github.com/mediazone/killports/releases/[^)]*\.pkg|https://github.com/mediazone/killports/releases/download/v$VERSION/KillPorts-v$VERSION.pkg|g" README.md || echo "No download URL in README.md"
         
         echo "✅ Updated website to version $VERSION"
 
