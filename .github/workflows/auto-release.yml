@@ -1,0 +1,130 @@
+name: 🚀 Auto Release & Website Update
+
+on:
+  push:
+    tags:
+      - 'v*'  # Triggers on version tags like v1.0.1, v2.0.0, etc.
+  workflow_dispatch:  # Allows manual triggering
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.1)'
+        required: true
+        default: '1.0.1'
+
+jobs:
+  create-release:
+    name: 🎯 Create GitHub Release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: 🏷️ Get Version
+      id: get_version
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          echo "tag=v${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: 📝 Generate Release Notes
+      id: release_notes
+      run: |
+        cat > release_notes.md << 'EOF'
+        # 🔥 KillPorts ${{ steps.get_version.outputs.tag }}
+        
+        **A sleek macOS MenuBar utility for developers to quickly free up network ports**
+        
+        ## 📥 Download
+        
+        **[⬇️ Download KillPorts-${{ steps.get_version.outputs.tag }}.pkg](https://github.com/mediazone/killports/releases/download/${{ steps.get_version.outputs.tag }}/KillPorts-${{ steps.get_version.outputs.tag }}.pkg)**
+        
+        > 🛡️ **Apple Notarized & Code Signed** - Safe and secure installation
+        
+        ## 🎯 Installation
+        
+        1. Download the `.pkg` file above
+        2. Double-click to install
+        3. Grant permissions when prompted
+        4. Launch from Applications or Spotlight
+        5. Look for the red X icon in your MenuBar!
+        
+        ## ✨ What's New
+        
+        See [CHANGELOG.md](https://github.com/mediazone/killports/blob/master/CHANGELOG.md) for detailed changes.
+        
+        ## 🔧 Technical Details
+        
+        - **Platform:** macOS 13.0+ (Ventura and later)
+        - **Architecture:** Universal Binary (Apple Silicon + Intel)
+        - **Language:** Swift + SwiftUI
+        - **Size:** ~1.7 MB download
+        
+        ---
+        
+        **Made with ❤️ for developers**
+        
+        🐛 [Report Issues](https://github.com/mediazone/killports/issues) • 💬 [Discussions](https://github.com/mediazone/killports/discussions) • 🌐 [Website](https://mediazone.github.io/killports/)
+        EOF
+        
+        echo "Generated release notes for ${{ steps.get_version.outputs.tag }}"
+        
+    - name: 🏗️ Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.tag }}
+        release_name: 🔥 KillPorts ${{ steps.get_version.outputs.tag }}
+        body_path: release_notes.md
+        draft: false
+        prerelease: false
+        
+  update-website:
+    name: 🌐 Update Website Download Links
+    runs-on: ubuntu-latest
+    needs: create-release
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: 🏷️ Get Version
+      id: get_version
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          echo "tag=v${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: 🔄 Update Website Download Links
+      run: |
+        # Update version in index.html
+        sed -i 's/v[0-9]\+\.[0-9]\+\.[0-9]\+/${{ steps.get_version.outputs.tag }}/g' index.html
+        sed -i 's/KillPorts-v[0-9]\+\.[0-9]\+\.[0-9]\+/KillPorts-${{ steps.get_version.outputs.tag }}/g' index.html
+        
+        # Update README.md download links
+        sed -i 's/v[0-9]\+\.[0-9]\+\.[0-9]\+/${{ steps.get_version.outputs.tag }}/g' README.md
+        sed -i 's/KillPorts-v[0-9]\+\.[0-9]\+\.[0-9]\+/KillPorts-${{ steps.get_version.outputs.tag }}/g' README.md
+        
+        echo "✅ Updated download links to ${{ steps.get_version.outputs.tag }}"
+        
+    - name: 📝 Commit Website Updates
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add index.html README.md
+        git commit -m "🔄 Auto-update download links to ${{ steps.get_version.outputs.tag }}" || echo "No changes to commit"
+        git push
+        
+    - name: 📢 Website Updated
+      run: |
+        echo "🎉 Website automatically updated with ${{ steps.get_version.outputs.tag }}"
+        echo "🌐 Live at: https://mediazone.github.io/killports/"

@@ -1,0 +1,138 @@
+name: 🔄 Sync New Release from Private Repo
+
+# This workflow helps you sync new releases from your private development repo
+# Run manually when you have a new version ready
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New version number (e.g., 1.0.1)'
+        required: true
+      pkg_url:
+        description: 'Direct download URL for the .pkg file'
+        required: true
+        default: 'https://example.com/KillPorts-v1.0.1.pkg'
+      changelog:
+        description: 'Brief changelog for this version'
+        required: true
+        default: 'Bug fixes and improvements'
+
+jobs:
+  sync-release:
+    name: 📦 Sync New Release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 📝 Update CHANGELOG.md
+      run: |
+        # Create new changelog entry
+        cat > temp_changelog.md << EOF
+        # Changelog
+        
+        All notable changes to KillPorts will be documented in this file.
+        
+        ## [${{ github.event.inputs.version }}] - $(date +%Y-%m-%d)
+        
+        ### Changed
+        - ${{ github.event.inputs.changelog }}
+        
+        EOF
+        
+        # Append existing changelog (skip first 4 lines)
+        tail -n +5 CHANGELOG.md >> temp_changelog.md
+        mv temp_changelog.md CHANGELOG.md
+        
+        echo "✅ Updated CHANGELOG.md with version ${{ github.event.inputs.version }}"
+        
+    - name: 🌐 Update Website Download Links
+      run: |
+        # Update version numbers in index.html
+        sed -i "s/Download v[0-9]\+\.[0-9]\+\.[0-9]\+/Download v${{ github.event.inputs.version }}/g" index.html
+        sed -i "s/KillPorts v[0-9]\+\.[0-9]\+\.[0-9]\+/KillPorts v${{ github.event.inputs.version }}/g" index.html
+        sed -i "s/KillPorts-v[0-9]\+\.[0-9]\+\.[0-9]\+\.pkg/KillPorts-v${{ github.event.inputs.version }}.pkg/g" index.html
+        
+        # Update README.md download links  
+        sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/v${{ github.event.inputs.version }}/g" README.md
+        sed -i "s/KillPorts-v[0-9]\+\.[0-9]\+\.[0-9]\+\.pkg/KillPorts-v${{ github.event.inputs.version }}.pkg/g" README.md
+        
+        echo "✅ Updated website download links to v${{ github.event.inputs.version }}"
+        
+    - name: 📝 Create Release Notes
+      run: |
+        cat > release_notes.md << 'EOF'
+        # 🔥 KillPorts v${{ github.event.inputs.version }}
+        
+        **A sleek macOS MenuBar utility for developers to quickly free up network ports**
+        
+        ## 📥 Download
+        
+        **[⬇️ Download KillPorts-v${{ github.event.inputs.version }}.pkg](${{ github.event.inputs.pkg_url }})**
+        
+        > 🛡️ **Apple Notarized & Code Signed** - Safe and secure installation
+        
+        ## ✨ What's New in v${{ github.event.inputs.version }}
+        
+        ${{ github.event.inputs.changelog }}
+        
+        ## 🎯 Installation
+        
+        1. Download the `.pkg` file above
+        2. Double-click to install  
+        3. Grant permissions when prompted
+        4. Launch from Applications or Spotlight
+        5. Look for the red X icon in your MenuBar!
+        
+        ## 🔧 Technical Details
+        
+        - **Platform:** macOS 13.0+ (Ventura and later)
+        - **Architecture:** Universal Binary (Apple Silicon + Intel)
+        - **Language:** Swift + SwiftUI
+        - **Size:** ~1.7 MB download
+        
+        ## 📋 Full Changelog
+        
+        See [CHANGELOG.md](https://github.com/mediazone/killports/blob/master/CHANGELOG.md) for complete version history.
+        
+        ---
+        
+        **Made with ❤️ for developers**
+        
+        🐛 [Report Issues](https://github.com/mediazone/killports/issues) • 💬 [Discussions](https://github.com/mediazone/killports/discussions) • 🌐 [Website](https://mediazone.github.io/killports/)
+        EOF
+        
+    - name: 📝 Commit All Changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "🚀 Release v${{ github.event.inputs.version }}
+        
+        ✨ Changes:
+        - ${{ github.event.inputs.changelog }}
+        - Updated download links across website and docs
+        - Added changelog entry
+        
+        📦 Download: ${{ github.event.inputs.pkg_url }}"
+        git push
+        
+    - name: 🏗️ Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ github.event.inputs.version }}
+        release_name: 🔥 KillPorts v${{ github.event.inputs.version }}
+        body_path: release_notes.md
+        draft: false
+        prerelease: false
+        
+    - name: 🎉 Release Complete
+      run: |
+        echo "🎉 Successfully created release v${{ github.event.inputs.version }}!"
+        echo "🌐 Website updated: https://mediazone.github.io/killports/"
+        echo "📦 Download: ${{ github.event.inputs.pkg_url }}"
+        echo "🔗 Release: https://github.com/mediazone/killports/releases/tag/v${{ github.event.inputs.version }}"
