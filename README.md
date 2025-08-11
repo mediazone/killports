@@ -1,5 +1,9 @@
 # 🔥 KillPorts MenuBar
 
+<div align="center">
+  <img src="killportlogo.png" alt="KillPorts - Developer Port Management for macOS" width="400">
+</div>
+
 **A sleek macOS MenuBar utility for developers to quickly free up network ports**
 
 ![KillPorts Screenshot](screenshots/killports-demo.png)
