@@ -1185,7 +1185,7 @@
             async sendDownloadEmail(email) {
                 // Try mediazone API first, fallback to showing message
                 try {
-                    const response = await fetch('https://www.mediazone.nl/api/killports/send-download', {
+                    const response = await fetch('https://webapi8.mediazone.nl/api/killports/send-download', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
