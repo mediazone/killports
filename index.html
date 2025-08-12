@@ -1167,12 +1167,12 @@
                 
                 try {
                     // Send download link email via backend
-                    await this.sendDownloadEmail(email);
+                    const response = await this.sendDownloadEmail(email);
                     
                     // Optional: Track email capture
                     await this.trackEmailCapture(email);
                     
-                    this.showSuccess(email);
+                    this.showSuccess(email, response);
                     
                 } catch (error) {
                     console.error('Email sending error:', error);
@@ -1203,14 +1203,20 @@
 
                     return await response.json();
                 } catch (error) {
-                    // Fallback: For now, just simulate success since API doesn't exist yet
-                    console.log('📧 Email would be sent to:', email);
-                    console.log('🔗 Download URL: https://github.com/mediazone/killports/releases/latest/download/KillPorts-v1.0.5.pkg');
+                    // API not available - provide direct download instead
+                    console.log('📧 API not available, providing direct download for:', email);
+                    console.log('🔗 Direct download URL: https://github.com/mediazone/killports/releases/latest/download/KillPorts-v1.0.5.pkg');
                     
-                    // Return mock success response
+                    // Automatically start download after short delay
+                    setTimeout(() => {
+                        window.open('https://github.com/mediazone/killports/releases/latest/download/KillPorts-v1.0.5.pkg', '_blank');
+                    }, 2000);
+                    
+                    // Return success with direct download message
                     return {
                         success: true,
-                        message: 'Download link will be sent to your email once the API is deployed'
+                        message: 'Email service is being set up. Your download will start automatically!',
+                        directDownload: true
                     };
                 }
             }
@@ -1265,11 +1271,24 @@
                 }
             }
             
-            showSuccess(email) {
+            showSuccess(email, response = {}) {
                 this.hideMessages();
                 this.form.style.display = 'none';
                 this.successMessage.style.display = 'block';
                 document.getElementById('successEmail').textContent = email;
+                
+                // Update message for direct download
+                if (response.directDownload) {
+                    document.querySelector('#successMessage h3').textContent = 'Download Starting!';
+                    document.querySelector('#successMessage p').innerHTML = 
+                        `We're setting up email delivery for future downloads.<br/>
+                         <strong>Your download will start automatically in a few seconds!</strong>`;
+                    document.querySelector('.success-note').innerHTML = 
+                        `<a href="https://github.com/mediazone/killports/releases/latest/download/KillPorts-v1.0.5.pkg" 
+                           style="color: #22C55E; text-decoration: underline;">
+                           🔗 Click here if download doesn't start automatically
+                        </a>`;
+                }
             }
             
             showError(message) {
