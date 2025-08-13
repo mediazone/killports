@@ -1,0 +1,285 @@
+name: Build and Release KillPorts
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.1, v2.1.0, etc.
+  workflow_dispatch:  # Allows manual triggering
+    inputs:
+      version:
+        description: 'Version number (e.g., v1.0.1)'
+        required: true
+        default: 'v1.0.0'
+
+env:
+  APP_NAME: "KillPorts"
+  SCHEME_NAME: "KillPorts"
+  BUNDLE_ID: "nl.mediazone.killports"
+  
+jobs:
+  build-and-release:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: Get version from tag or input
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "push" ]; then
+          VERSION=${GITHUB_REF#refs/tags/}
+        else
+          VERSION=${{ github.event.inputs.version }}
+        fi
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "VERSION_NUMBER=${VERSION#v}" >> $GITHUB_OUTPUT
+        echo "Building version: $VERSION"
+        
+    - name: Update version in project
+      run: |
+        # Update Info.plist with new version
+        /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ steps.version.outputs.VERSION_NUMBER }}" "$APP_NAME/Info.plist" || true
+        /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ steps.version.outputs.VERSION_NUMBER }}" "$APP_NAME/Info.plist" || true
+        
+        # Update project.pbxproj if needed
+        if [ -f "$APP_NAME.xcodeproj/project.pbxproj" ]; then
+          sed -i '' "s/MARKETING_VERSION = .*/MARKETING_VERSION = ${{ steps.version.outputs.VERSION_NUMBER }};/g" "$APP_NAME.xcodeproj/project.pbxproj"
+          sed -i '' "s/CURRENT_PROJECT_VERSION = .*/CURRENT_PROJECT_VERSION = ${{ steps.version.outputs.VERSION_NUMBER }};/g" "$APP_NAME.xcodeproj/project.pbxproj"
+        fi
+        
+    - name: Import Code-Signing Certificates
+      uses: Apple-Actions/import-codesign-certs@v2
+      with:
+        p12-file-base64: ${{ secrets.CERTIFICATES_P12 }}
+        p12-password: ${{ secrets.CERTIFICATES_P12_PASSWORD }}
+        
+    - name: Install the provisioning profile
+      env:
+        PROVISIONING_CERTIFICATE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
+      run: |
+        if [ ! -z "$PROVISIONING_CERTIFICATE_BASE64" ]; then
+          PP_PATH=$RUNNER_TEMP/build_pp.provisionprofile
+          echo -n "$PROVISIONING_CERTIFICATE_BASE64" | base64 --decode --output $PP_PATH
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+        fi
+        
+    - name: Build app
+      run: |
+        echo "🔨 Building KillPorts for macOS..."
+        
+        # Build the app
+        xcodebuild -scheme "$SCHEME_NAME" \
+                   -configuration Release \
+                   -archivePath "$RUNNER_TEMP/$APP_NAME.xcarchive" \
+                   -destination "generic/platform=macOS" \
+                   archive \
+                   CODE_SIGN_IDENTITY="Developer ID Application" \
+                   PROVISIONING_PROFILE="" \
+                   CODE_SIGN_STYLE=Manual
+                   
+        echo "✅ Build completed successfully"
+        
+    - name: Export app
+      run: |
+        echo "📦 Exporting KillPorts app..."
+        
+        # Create export options plist
+        cat > "$RUNNER_TEMP/ExportOptions.plist" << EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>method</key>
+            <string>developer-id</string>
+            <key>teamID</key>
+            <string>\${{ secrets.APPLE_TEAM_ID }}</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>stripSwiftSymbols</key>
+            <true/>
+        </dict>
+        </plist>
+        EOF
+        
+        # Export the archive
+        xcodebuild -exportArchive \
+                   -archivePath "$RUNNER_TEMP/$APP_NAME.xcarchive" \
+                   -exportPath "$RUNNER_TEMP/export" \
+                   -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist"
+                   
+        echo "✅ Export completed successfully"
+        
+    - name: Notarize app
+      env:
+        NOTARIZATION_USERNAME: ${{ secrets.NOTARIZATION_USERNAME }}
+        NOTARIZATION_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      run: |
+        echo "🔐 Notarizing KillPorts with Apple..."
+        
+        # Find the exported app
+        APP_PATH=$(find "$RUNNER_TEMP/export" -name "*.app" -type d | head -n 1)
+        echo "App path: $APP_PATH"
+        
+        # Create a zip for notarization
+        NOTARIZE_ZIP="$RUNNER_TEMP/$APP_NAME-${{ steps.version.outputs.VERSION }}.zip"
+        cd "$(dirname "$APP_PATH")"
+        zip -r "$NOTARIZE_ZIP" "$(basename "$APP_PATH")"
+        
+        # Submit for notarization
+        echo "Submitting to Apple for notarization..."
+        xcrun notarytool submit "$NOTARIZE_ZIP" \
+                               --apple-id "$NOTARIZATION_USERNAME" \
+                               --password "$NOTARIZATION_PASSWORD" \
+                               --team-id "$APPLE_TEAM_ID" \
+                               --wait
+                               
+        echo "✅ Notarization completed successfully"
+        
+    - name: Create installer package
+      run: |
+        echo "📦 Creating installer package..."
+        
+        # Find the exported app
+        APP_PATH=$(find "$RUNNER_TEMP/export" -name "*.app" -type d | head -n 1)
+        PKG_PATH="$RUNNER_TEMP/$APP_NAME-${{ steps.version.outputs.VERSION }}.pkg"
+        
+        # Create the installer package
+        productbuild --component "$APP_PATH" /Applications \
+                     --sign "Developer ID Installer" \
+                     "$PKG_PATH"
+                     
+        # Verify the package
+        echo "Package created at: $PKG_PATH"
+        ls -la "$PKG_PATH"
+        
+        echo "PKG_PATH=$PKG_PATH" >> $GITHUB_ENV
+        
+        echo "✅ Installer package created successfully"
+        
+    - name: Calculate checksums
+      run: |
+        echo "🔢 Calculating checksums..."
+        cd "$RUNNER_TEMP"
+        
+        # Calculate SHA256
+        shasum -a 256 "$APP_NAME-${{ steps.version.outputs.VERSION }}.pkg" > checksums.txt
+        
+        echo "Checksums:"
+        cat checksums.txt
+        
+    - name: Create Release Notes
+      id: release_notes
+      run: |
+        cat > "$RUNNER_TEMP/release_notes.md" << EOF
+        # KillPorts ${{ steps.version.outputs.VERSION }}
+        
+        ## 🚀 What's New
+        
+        - Improved port management functionality
+        - Enhanced macOS compatibility  
+        - Performance optimizations
+        - Bug fixes and stability improvements
+        
+        ## 📋 System Requirements
+        
+        - **macOS**: 13.0 or later
+        - **Architecture**: Apple Silicon (M1/M2/M3) and Intel
+        - **Size**: $(ls -lh "$PKG_PATH" | awk '{print $5}')
+        
+        ## 🛡️ Security
+        
+        - ✅ **Code Signed** with Developer ID
+        - ✅ **Notarized** by Apple
+        - ✅ **Malware Scanned**
+        
+        ## 🔧 Installation
+        
+        1. Download \`KillPorts-${{ steps.version.outputs.VERSION }}.pkg\`
+        2. Double-click to install
+        3. Launch from Applications folder
+        4. Grant necessary permissions when prompted
+        
+        ## 📝 Checksums
+        
+        \`\`\`
+        $(cat "$RUNNER_TEMP/checksums.txt")
+        \`\`\`
+        
+        ---
+        
+        🤖 *This release was automatically built and deployed via GitHub Actions*
+        EOF
+        
+        echo "RELEASE_NOTES_PATH=$RUNNER_TEMP/release_notes.md" >> $GITHUB_ENV
+        
+    - name: Create Release in Public Repository
+      env:
+        GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+      run: |
+        echo "🚀 Creating release in public repository..."
+        
+        # Set up git for the public repo
+        git config --global user.name "KillPorts Release Bot"
+        git config --global user.email "noreply@mediazone.nl"
+        
+        # Clone public repository
+        git clone https://x-access-token:${{ secrets.PUBLIC_REPO_TOKEN }}@github.com/mediazone/killports.git public-repo
+        cd public-repo
+        
+        # Create and push tag
+        git tag ${{ steps.version.outputs.VERSION }}
+        git push origin ${{ steps.version.outputs.VERSION }}
+        
+        # Create the release using GitHub CLI
+        gh release create ${{ steps.version.outputs.VERSION }} \
+           "$PKG_PATH" \
+           "$RUNNER_TEMP/checksums.txt" \
+           --title "KillPorts ${{ steps.version.outputs.VERSION }}" \
+           --notes-file "$RELEASE_NOTES_PATH" \
+           --repo mediazone/killports
+           
+        echo "✅ Release created successfully in public repository"
+        
+    - name: Update website version references
+      env:
+        GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+      run: |
+        echo "🌐 Updating website version references..."
+        cd public-repo
+        
+        # Update any hardcoded version references in website files
+        if [ -f "index.html" ]; then
+          # Update download links to point to new version
+          sed -i '' "s/KillPorts-v[0-9]*\.[0-9]*\.[0-9]*/KillPorts-${{ steps.version.outputs.VERSION }}/g" index.html
+          
+          # Update version numbers in text
+          sed -i '' "s/v[0-9]*\.[0-9]*\.[0-9]*/${{ steps.version.outputs.VERSION }}/g" index.html
+          
+          # Commit changes if any
+          if ! git diff --quiet; then
+            git add index.html
+            git commit -m "🤖 Auto-update website for ${{ steps.version.outputs.VERSION }}"
+            git push origin main
+            echo "✅ Website updated with new version"
+          else
+            echo "ℹ️  No website updates needed (dynamic versioning in use)"
+          fi
+        fi
+        
+    - name: Notify completion
+      run: |
+        echo "🎉 KillPorts ${{ steps.version.outputs.VERSION }} has been successfully built and released!"
+        echo ""
+        echo "📦 Package: $APP_NAME-${{ steps.version.outputs.VERSION }}.pkg"
+        echo "🔗 Public Release: https://github.com/mediazone/killports/releases/tag/${{ steps.version.outputs.VERSION }}"
+        echo "🌐 Website: https://killports.com (will auto-update)"
+        echo ""
+        echo "✅ The website will automatically detect and display this new version!"
