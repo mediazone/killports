@@ -14,7 +14,7 @@ KillPorts is a lightweight MenuBar utility for developers to instantly kill stuc
 
 ## 🚀 Quick Start
 
-1. **Download** the latest version from [KillPorts.dev](https://killports.dev)
+1. **Download** the latest version from [KillPorts.com](https://killports.com)
 2. **Install** the `.pkg` file 
 3. **Launch** KillPorts from Applications
 4. **Click** the MenuBar icon to manage ports
@@ -54,7 +54,7 @@ Frontend (Static) → WebApi8 MediaZone → Azure Key Vault → Resend API
 
 ## 🌍 Hosting
 
-- **Frontend**: GitHub Pages at [killports.dev](https://killports.dev)
+- **Frontend**: GitHub Pages at [killports.com](https://killports.com)
 - **Backend**: WebApi8 MediaZone with Azure hosting
 - **DNS**: Cloudflare with SSL/CDN
 
@@ -86,7 +86,7 @@ Email captures and download requests are tracked via:
 ## 💬 Support
 
 - **Issues**: [GitHub Issues](https://github.com/mediazone/killports/issues)
-- **Website**: [killports.dev](https://killports.dev)
+- **Website**: [killports.com](https://killports.com)
 - **Email**: Contact via website form
 
 ---
