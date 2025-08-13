@@ -220,6 +220,263 @@ jobs:
         
         echo "RELEASE_NOTES_PATH=$RUNNER_TEMP/release_notes.md" >> $GITHUB_ENV
         
+    - name: Generate Legal Pages
+      run: |
+        echo "📋 Generating legal documentation..."
+        
+        # Create Terms of Use
+        cat > "$RUNNER_TEMP/terms.html" << 'EOF'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Terms of Use - KillPorts</title>
+            <meta name="description" content="Terms of Use for KillPorts - Free macOS Port Management Tool">
+            <link rel="canonical" href="https://killports.com/terms.html">
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #0A0A0A; color: #FFFFFF; }
+                .container { max-width: 800px; margin: 0 auto; }
+                h1 { color: #FF4444; border-bottom: 2px solid #FF4444; padding-bottom: 10px; }
+                h2 { color: #FF6666; margin-top: 30px; }
+                a { color: #FF4444; }
+                .back-link { background: #FF4444; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-bottom: 20px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <a href="/" class="back-link">← Back to KillPorts</a>
+                
+                <h1>Terms of Use</h1>
+                <p><strong>Last Updated:</strong> $(date +"%B %d, %Y")</p>
+                
+                <h2>1. Acceptance of Terms</h2>
+                <p>By downloading, installing, or using KillPorts software, you agree to be bound by these Terms of Use. If you do not agree to these terms, do not use the software.</p>
+                
+                <h2>2. Description of Service</h2>
+                <p>KillPorts is a free macOS application that provides network port management functionality for developers. The software allows users to identify and terminate network processes through a MenuBar interface.</p>
+                
+                <h2>3. License Grant</h2>
+                <p>KillPorts is provided free of charge under an open source license. You are granted a non-exclusive, non-transferable license to use the software for personal and commercial purposes.</p>
+                
+                <h2>4. User Responsibilities</h2>
+                <ul>
+                    <li>Use the software responsibly and in accordance with its intended purpose</li>
+                    <li>Do not use the software to terminate critical system processes</li>
+                    <li>Ensure you have proper administrative privileges before using port management features</li>
+                    <li>Back up important work before terminating development processes</li>
+                </ul>
+                
+                <h2>5. Disclaimer of Warranties</h2>
+                <p>KillPorts is provided "AS IS" without warranty of any kind. The developers make no representations or warranties regarding the software's functionality, reliability, or suitability for any particular purpose.</p>
+                
+                <h2>6. Limitation of Liability</h2>
+                <p>In no event shall the developers be liable for any direct, indirect, incidental, special, or consequential damages arising from the use or inability to use the software.</p>
+                
+                <h2>7. Updates and Modifications</h2>
+                <p>These terms may be updated from time to time. Continued use of the software after any such changes constitutes acceptance of the new terms.</p>
+                
+                <h2>8. Contact Information</h2>
+                <p>For questions about these terms, please contact: <a href="mailto:info@mediazone.nl">info@mediazone.nl</a></p>
+                
+                <h2>9. Governing Law</h2>
+                <p>These terms are governed by the laws of the Netherlands. Any disputes shall be resolved in the courts of the Netherlands.</p>
+            </div>
+        </body>
+        </html>
+        EOF
+        
+        # Create Privacy Policy
+        cat > "$RUNNER_TEMP/privacy.html" << 'EOF'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Privacy Policy - KillPorts</title>
+            <meta name="description" content="Privacy Policy for KillPorts - We respect your privacy and collect minimal data">
+            <link rel="canonical" href="https://killports.com/privacy.html">
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #0A0A0A; color: #FFFFFF; }
+                .container { max-width: 800px; margin: 0 auto; }
+                h1 { color: #FF4444; border-bottom: 2px solid #FF4444; padding-bottom: 10px; }
+                h2 { color: #FF6666; margin-top: 30px; }
+                a { color: #FF4444; }
+                .back-link { background: #FF4444; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-bottom: 20px; }
+                .highlight { background: rgba(255, 68, 68, 0.1); padding: 15px; border-left: 3px solid #FF4444; margin: 20px 0; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <a href="/" class="back-link">← Back to KillPorts</a>
+                
+                <h1>Privacy Policy</h1>
+                <p><strong>Last Updated:</strong> $(date +"%B %d, %Y")</p>
+                
+                <div class="highlight">
+                    <strong>Privacy First:</strong> KillPorts is designed with privacy in mind. We collect minimal data and never track your personal development work.
+                </div>
+                
+                <h2>1. Information We Collect</h2>
+                <h3>Application Usage</h3>
+                <ul>
+                    <li><strong>No Personal Data:</strong> KillPorts does not collect personal information</li>
+                    <li><strong>No Process Monitoring:</strong> We do not track which processes you terminate</li>
+                    <li><strong>No Network Monitoring:</strong> We do not monitor your network traffic or development servers</li>
+                    <li><strong>No File Access:</strong> The app only accesses system process information necessary for port management</li>
+                </ul>
+                
+                <h3>Download Analytics</h3>
+                <ul>
+                    <li>Download counts from GitHub (public information)</li>
+                    <li>General geographic regions (country-level only)</li>
+                    <li>No individual user tracking or identification</li>
+                </ul>
+                
+                <h2>2. How We Use Information</h2>
+                <ul>
+                    <li>Improve software functionality based on general usage patterns</li>
+                    <li>Provide technical support when requested</li>
+                    <li>Maintain and update the application</li>
+                </ul>
+                
+                <h2>3. Information Sharing</h2>
+                <p>We do not sell, trade, or share any user information with third parties. KillPorts operates entirely locally on your macOS system.</p>
+                
+                <h2>4. Data Storage</h2>
+                <ul>
+                    <li>All process management occurs locally on your device</li>
+                    <li>No data is transmitted to external servers during normal operation</li>
+                    <li>Application preferences are stored locally in macOS system directories</li>
+                </ul>
+                
+                <h2>5. Third-Party Services</h2>
+                <ul>
+                    <li><strong>GitHub:</strong> Software distribution and updates (subject to GitHub's privacy policy)</li>
+                    <li><strong>Apple:</strong> Code signing and notarization (subject to Apple's privacy policy)</li>
+                </ul>
+                
+                <h2>6. Your Rights</h2>
+                <ul>
+                    <li>Right to use the software without data collection</li>
+                    <li>Right to uninstall the software at any time</li>
+                    <li>Right to contact us with privacy concerns</li>
+                </ul>
+                
+                <h2>7. Security</h2>
+                <p>KillPorts is Apple notarized and code signed. The application follows macOS security guidelines and requires appropriate permissions for process management.</p>
+                
+                <h2>8. Children's Privacy</h2>
+                <p>KillPorts is intended for developers and does not knowingly collect information from children under 13.</p>
+                
+                <h2>9. Changes to Privacy Policy</h2>
+                <p>We may update this privacy policy from time to time. Changes will be posted on our website with an updated date.</p>
+                
+                <h2>10. Contact Us</h2>
+                <p>For privacy-related questions or concerns:</p>
+                <ul>
+                    <li>Email: <a href="mailto:info@mediazone.nl">info@mediazone.nl</a></li>
+                    <li>GitHub: <a href="https://github.com/mediazone/killports/issues">Report Issues</a></li>
+                </ul>
+            </div>
+        </body>
+        </html>
+        EOF
+        
+        # Create License Page
+        cat > "$RUNNER_TEMP/license.html" << 'EOF'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>License - KillPorts</title>
+            <meta name="description" content="Open Source License for KillPorts - Free macOS Port Management Tool">
+            <link rel="canonical" href="https://killports.com/license.html">
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; margin: 0; padding: 20px; background: #0A0A0A; color: #FFFFFF; }
+                .container { max-width: 800px; margin: 0 auto; }
+                h1 { color: #FF4444; border-bottom: 2px solid #FF4444; padding-bottom: 10px; }
+                h2 { color: #FF6666; margin-top: 30px; }
+                a { color: #FF4444; }
+                .back-link { background: #FF4444; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-bottom: 20px; }
+                .license-text { background: #111; padding: 20px; border-left: 3px solid #FF4444; font-family: 'Monaco', 'Menlo', monospace; font-size: 14px; }
+                .highlight { background: rgba(255, 68, 68, 0.1); padding: 15px; border-left: 3px solid #FF4444; margin: 20px 0; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <a href="/" class="back-link">← Back to KillPorts</a>
+                
+                <h1>Open Source License</h1>
+                <p><strong>Version:</strong> KillPorts ${{ steps.version.outputs.VERSION }}</p>
+                <p><strong>Release Date:</strong> $(date +"%B %d, %Y")</p>
+                
+                <div class="highlight">
+                    <strong>Free and Open Source:</strong> KillPorts is released under the MIT License, giving you freedom to use, modify, and distribute the software.
+                </div>
+                
+                <h2>MIT License</h2>
+                
+                <div class="license-text">
+        Copyright (c) $(date +"%Y") Ron Koldeweid, Mediazone
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+                </div>
+                
+                <h2>What This Means</h2>
+                <ul>
+                    <li><strong>✅ Commercial Use:</strong> You can use KillPorts in commercial projects</li>
+                    <li><strong>✅ Modification:</strong> You can modify the source code for your needs</li>
+                    <li><strong>✅ Distribution:</strong> You can distribute copies of the software</li>
+                    <li><strong>✅ Private Use:</strong> You can use the software privately</li>
+                    <li><strong>⚠️ Liability:</strong> Software is provided "as is" without warranty</li>
+                    <li><strong>📋 License Notice:</strong> Include the license notice in distributions</li>
+                </ul>
+                
+                <h2>Third-Party Components</h2>
+                <p>KillPorts may include third-party libraries and components. Each component retains its original license:</p>
+                <ul>
+                    <li>macOS System Frameworks (Apple's Software License Agreement)</li>
+                    <li>Swift Runtime (Apache License 2.0)</li>
+                </ul>
+                
+                <h2>Source Code</h2>
+                <p>The complete source code for KillPorts is available on GitHub:</p>
+                <p><a href="https://github.com/mediazone/killports">https://github.com/mediazone/killports</a></p>
+                
+                <h2>Contributing</h2>
+                <p>We welcome contributions! By contributing to KillPorts, you agree that your contributions will be licensed under the same MIT License.</p>
+                
+                <h2>Questions</h2>
+                <p>For questions about licensing:</p>
+                <ul>
+                    <li>Email: <a href="mailto:info@mediazone.nl">info@mediazone.nl</a></li>
+                    <li>GitHub: <a href="https://github.com/mediazone/killports">KillPorts Repository</a></li>
+                </ul>
+            </div>
+        </body>
+        </html>
+        EOF
+        
+        echo "✅ Legal pages generated successfully"
+        
     - name: Create Release in Public Repository
       env:
         GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
@@ -247,6 +504,28 @@ jobs:
            --repo mediazone/killports
            
         echo "✅ Release created successfully in public repository"
+        
+        # Copy legal pages to website
+        echo "📋 Updating legal pages..."
+        cp "$RUNNER_TEMP/terms.html" .
+        cp "$RUNNER_TEMP/privacy.html" .
+        cp "$RUNNER_TEMP/license.html" .
+        
+        # Commit legal pages if they changed
+        if ! git diff --quiet terms.html privacy.html license.html 2>/dev/null; then
+            git add terms.html privacy.html license.html
+            git commit -m "📋 Auto-update legal pages for ${{ steps.version.outputs.VERSION }}
+
+- Updated Terms of Use with current date
+- Updated Privacy Policy with current date  
+- Updated License with current version and date
+
+🤖 Generated automatically during release process"
+            git push origin main
+            echo "✅ Legal pages updated and committed"
+        else
+            echo "ℹ️  Legal pages unchanged"
+        fi
         
     - name: Update website version references
       env:
