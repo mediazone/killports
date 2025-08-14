@@ -929,6 +929,37 @@
             padding-top: 32px;
             text-align: center;
             color: rgba(255, 255, 255, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .footer-credits {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .mediazone-link {
+            color: var(--primary-color) !important;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .mediazone-link:hover {
+            color: rgba(255, 68, 68, 0.8) !important;
+            text-shadow: 0 0 8px rgba(255, 68, 68, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .footer-tagline {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6) !important;
+            font-style: italic;
+            margin: 0;
         }
         
         .footer-logo {
@@ -998,6 +1029,19 @@
             
             nav ul {
                 display: none;
+            }
+            
+            .footer-credits {
+                text-align: center;
+            }
+            
+            .footer-credits p {
+                font-size: 14px;
+                line-height: 1.5;
+            }
+            
+            .footer-tagline {
+                font-size: 13px !important;
             }
         }
     </style>
@@ -1263,7 +1307,10 @@
                 <div class="footer-logo">
                     <img src="killportslogowhite.png" alt="KillPorts - Developer Port Management" class="footer-logo-image" />
                 </div>
-                <p>&copy; 2025 KillPorts by Ron Koldeweid. Made for developers.</p>
+                <div class="footer-credits">
+                    <p>&copy; 2025 KillPorts by <a href="https://www.mediazone.nl" target="_blank" rel="noopener" class="mediazone-link">Mediazone</a></p>
+                    <p class="footer-tagline">Professional macOS developer tools • Made in The Netherlands 🇳🇱</p>
+                </div>
             </div>
         </div>
     </footer>
