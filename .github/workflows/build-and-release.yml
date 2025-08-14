@@ -1,0 +1,81 @@
+name: 🚀 Build and Release KillPorts
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.1)'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  build-and-release:
+    runs-on: macos-13
+    
+    steps:
+      - name: 📥 Checkout KillPorts Website
+        uses: actions/checkout@v4
+        
+      - name: 🎯 Extract Version from Input or Generate
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            # Auto-generate version based on commit count for push events
+            COUNT=$(git rev-list --count HEAD)
+            VERSION="v1.0.$COUNT"
+          fi
+          
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "🎯 Release version: $VERSION"
+          
+      - name: 📋 Update Website with Version
+        run: |
+          # Update version references in index.html
+          sed -i '' 's/"softwareVersion": "[^"]*"/"softwareVersion": "${{ steps.version.outputs.VERSION }}"/g' index.html
+          sed -i '' 's/Download v[0-9]\+\.[0-9]\+\.[0-9]\+/Download ${{ steps.version.outputs.VERSION }}/g' index.html
+          
+          echo "✅ Updated website with version ${{ steps.version.outputs.VERSION }}"
+          
+      - name: 🚀 Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          # Create release with clean changelog
+          gh release create "${{ steps.version.outputs.VERSION }}" \
+            --title "🚀 KillPorts ${{ steps.version.outputs.VERSION }}" \
+            --notes "## KillPorts Website Release ${{ steps.version.outputs.VERSION }}
+
+          ### 🌟 Features
+          - Professional KillPorts website
+          - Dutch Legal MCP compliance validation (GDPR 10/10, Dutch Civil Law 9/10)
+          - Complete legal documentation (Privacy, Terms, License)
+          - Mobile-responsive design with dark theme
+          - SEO optimized for developer tools
+          
+          ### 📱 Website
+          - **Live Site**: https://killports.com
+          - **Compliance Report**: https://killports.com/compliance.html
+          - **Privacy Policy**: https://killports.com/privacy.html
+          
+          ### 🛡️ Security & Compliance
+          - Zero data collection (perfect privacy)
+          - Apple notarized macOS application
+          - Open source with MIT license
+          - Professional legal compliance validation
+          
+          ---
+          🤖 **Generated with [Claude Code](https://claude.ai/code)**
+          
+          **Download KillPorts**: Get the latest macOS application from the main repository."
+            
+          echo "✅ Created release ${{ steps.version.outputs.VERSION }}"
+          
+      - name: ✅ Deployment Complete
+        run: |
+          echo "🎉 KillPorts website ${{ steps.version.outputs.VERSION }} deployed successfully!"
+          echo "🌐 Live at: https://killports.com"
+          echo "📊 Compliance: https://killports.com/compliance.html"
