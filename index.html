@@ -38,9 +38,9 @@
       "downloadUrl": "https://github.com/mediazone/killports/releases/latest",
       "applicationCategory": ["DeveloperApplication", "Utility", "ProductivityApplication"],
       "operatingSystem": ["macOS 13.0", "macOS 14.0", "macOS 15.0"],
-      "softwareVersion": "2.1.3",
-      "releaseNotes": "Latest release with automated build pipeline and enhanced stability",
-      "fileSize": "90KB",
+      "softwareVersion": "2.1.4",
+      "releaseNotes": "Fixed robot MenuBar icon - now displays proper branding instead of fallback cross",
+      "fileSize": "1.5MB",
       "license": "https://killports.com/license.html",
       "author": {
         "@type": "Person",
@@ -1028,7 +1028,7 @@
                 
                 <nav class="hero-buttons" aria-label="Download options">
                     <a href="#download" class="primary-button" aria-describedby="download-info">
-                        ⚡ Download v2.1.3
+                        ⚡ Download v2.1.4
                     </a>
                     <div id="download-info" class="sr-only">
                         Free download for macOS 13.0 and later, compatible with Apple Silicon and Intel Macs
@@ -1083,7 +1083,7 @@
                 </div>
                 
                 <div class="system-requirements">
-                    <p>macOS 13.0+ • Apple Silicon & Intel • 90 KB Download</p>
+                    <p>macOS 13.0+ • Apple Silicon & Intel • 1.5 MB Download</p>
                     <p>🛡️ Notarized by Apple • Code Signed • Malware Scanned</p>
                     <p>🎯 <strong>Instant Download</strong> - No email required, no tracking, just pure developer utility</p>
                     <p><a href="https://github.com/mediazone/killports" style="color: rgba(255, 255, 255, 0.8); text-decoration: underline;">⭐ Star us on GitHub</a></p>
@@ -1136,7 +1136,7 @@
             <ul>
                 <li>Platform: macOS 13.0 (Ventura) and later</li>
                 <li>Architecture: Universal binary (Apple Silicon M1/M2/M3 and Intel x86_64)</li>
-                <li>Size: 90 KB download</li>
+                <li>Size: 1.5 MB download</li>
                 <li>Installation: Standard macOS .pkg installer</li>
                 <li>Security: Apple notarized and code signed with Developer ID</li>
                 <li>Permissions: Requires admin access to kill system processes</li>
@@ -1304,10 +1304,10 @@
                 console.error('❌ Error fetching latest release:', error);
                 // Fallback to generic latest URL
                 return {
-                    version: 'v2.1.3',
+                    version: 'v2.1.4',
                     downloadUrl: 'https://github.com/mediazone/killports/releases/latest',
                     releaseDate: 'Latest',
-                    size: '90 KB'
+                    size: '1.5 MB'
                 };
             }
         }
